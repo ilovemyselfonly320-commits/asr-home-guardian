@@ -112,10 +112,6 @@ export const StudyMode = ({ onBack }: StudyModeProps) => {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Menu
         </Button>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-full robot-eye robot-eyes" />
-          <div className="w-8 h-8 bg-primary rounded-full robot-eye robot-eyes" />
-        </div>
         <div className="text-sm text-primary font-mono">10:35</div>
       </div>
 
