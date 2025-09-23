@@ -88,7 +88,7 @@ export const RobotFace = ({
 
       {/* Voice Button */}
       {showVoiceButton && (
-        <div className="mt-8">
+        <div className="mt-8 flex flex-col items-center">
           <Button
             variant="ghost"
             size="lg"
