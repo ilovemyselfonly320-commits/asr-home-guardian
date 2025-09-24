@@ -41,9 +41,11 @@ export const SecurityMode: React.FC<SecurityModeProps> = ({ onBack }) => {
       if (isConnected) {
         const status = await getDeviceStatus('E1');
         setDeviceData(status);
-        toast.success("Connected to ESP32 Home System");
+        toast.success("✅ Connected to ESP32 Home System!");
+        console.log('Live device status:', status);
       } else {
-        toast.error("Cannot connect to ESP32 system - using offline mode");
+        toast.error("❌ Cannot connect to ESP32 system. Check server at https://smartsmoney.in/esp32/");
+        console.log('Failed to connect to ESP32 server - using offline mode');
       }
       setLoading(false);
     };

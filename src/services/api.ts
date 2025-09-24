@@ -120,20 +120,33 @@ export const getCommands = async (deviceId: string = 'E1'): Promise<any[]> => {
   }
 };
 
-// Test API connection
+// Test API connection with detailed logging
 export const testConnection = async (): Promise<boolean> => {
   try {
+    console.log('Testing connection to:', `${API_BASE_URL}/test.php?action=test`);
+    
     const response = await fetch(`${API_BASE_URL}/test.php?action=test`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      mode: 'cors', // Explicitly set CORS mode
     });
     
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+    
+    if (!response.ok) {
+      console.error('HTTP error:', response.status, response.statusText);
+      return false;
+    }
+    
     const result = await response.json();
+    console.log('API test result:', result);
     return result.status === 'success';
   } catch (error) {
     console.error('API connection test failed:', error);
+    console.error('Make sure your server is running and accessible at:', API_BASE_URL);
     return false;
   }
 };
