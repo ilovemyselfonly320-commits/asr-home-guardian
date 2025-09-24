@@ -86,11 +86,23 @@ export const SecurityMode: React.FC<SecurityModeProps> = ({ onBack }) => {
   };
 
   const toggleDevice = (room: string, device: string) => {
-    // For real devices, send actual commands
+    // Relay 1 - Hall Light
     if (room === 'hall' && device === 'light' && connected) {
       const currentState = deviceData?.Light?.value === 'ON';
-      const command = currentState ? 'LIGHT_OFF' : 'LIGHT_ON';
-      handleDeviceCommand(command, 'Light');
+      const command = currentState ? 'RELAY1_OFF' : 'RELAY1_ON';
+      handleDeviceCommand(command, 'Hall Light (Relay 1)');
+      return;
+    }
+    
+    // Relay 2 - Bedroom Light  
+    if (room === 'bedroom' && device === 'light' && connected) {
+      const currentState = automationDevices.bedroom.light;
+      const command = currentState ? 'RELAY2_OFF' : 'RELAY2_ON';
+      handleDeviceCommand(command, 'Bedroom Light (Relay 2)');
+      setAutomationDevices(prev => ({
+        ...prev,
+        bedroom: { ...prev.bedroom, light: !currentState }
+      }));
       return;
     }
     
@@ -178,12 +190,12 @@ export const SecurityMode: React.FC<SecurityModeProps> = ({ onBack }) => {
       <div className="max-w-2xl mx-auto">
         {selectedTab === 'automation' && (
           <div className="grid gap-4">
-            {/* Real ESP32 Device - Hall */}
+            {/* Hall - Relay 1 Control */}
             <Card className="p-4 border-2 border-primary/20">
               <CardHeader className="pb-3">
                 <CardTitle className="capitalize flex items-center gap-2">
                   <Home className="h-5 w-5" />
-                  Hall (ESP32 Device E1)
+                  Hall (Relay 1 - ESP32 Device E1)
                   {connected && <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">LIVE</span>}
                 </CardTitle>
               </CardHeader>
@@ -191,7 +203,7 @@ export const SecurityMode: React.FC<SecurityModeProps> = ({ onBack }) => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Zap className="h-4 w-4" />
-                    <span>Light</span>
+                    <span>Light (Relay 1)</span>
                     {deviceData?.Light && (
                       <span className="text-xs text-muted-foreground">
                         ({deviceData.Light.value})
@@ -227,25 +239,77 @@ export const SecurityMode: React.FC<SecurityModeProps> = ({ onBack }) => {
                     onCheckedChange={() => toggleDevice('hall', 'tv')}
                   />
                 </div>
-                {deviceData?.Door && (
-                  <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <DoorOpen className="h-4 w-4" />
-                      <span className="font-medium">Door Sensor:</span>
-                      <span className={`font-bold ${deviceData.Door.value === 'OPEN' ? 'text-red-600' : 'text-green-600'}`}>
-                        {deviceData.Door.value}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Last update: {new Date(deviceData.Door.timestamp).toLocaleString()}
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
+            {/* Bedroom - Relay 2 Control */}
+            <Card className="p-4 border-2 border-secondary/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="capitalize flex items-center gap-2">
+                  <Home className="h-5 w-5" />
+                  Bedroom (Relay 2 - ESP32 Device E1)
+                  {connected && <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">LIVE</span>}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    <span>Light (Relay 2)</span>
+                  </div>
+                  <Switch
+                    checked={automationDevices.bedroom.light}
+                    onCheckedChange={() => toggleDevice('bedroom', 'light')}
+                    disabled={loading}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Fan (Local Control)</span>
+                  <Switch
+                    checked={automationDevices.bedroom.fan}
+                    onCheckedChange={() => toggleDevice('bedroom', 'fan')}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>AC (Local Control)</span>
+                  <Switch
+                    checked={automationDevices.bedroom.ac}
+                    onCheckedChange={() => toggleDevice('bedroom', 'ac')}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Live Door Status */}
+            {deviceData?.Door && (
+              <Card className={`p-4 border-2 ${deviceData.Door.value === 'OPEN' ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50'}`}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2">
+                    <DoorOpen className="h-5 w-5" />
+                    Live Door Status (ESP32)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Main Door</span>
+                    <div className={`px-3 py-1 rounded-full text-sm font-bold ${
+                      deviceData.Door.value === 'OPEN' ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'
+                    }`}>
+                      {deviceData.Door.value}
+                      {deviceData.Door.value === 'OPEN' && (
+                        <AlertTriangle className="h-4 w-4 inline ml-1" />
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Last update: {new Date(deviceData.Door.timestamp).toLocaleString()}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Other Rooms (Local Control) */}
-            {Object.entries(automationDevices).filter(([room]) => room !== 'hall').map(([room, devices]) => (
+            {Object.entries(automationDevices).filter(([room]) => room !== 'hall' && room !== 'bedroom').map(([room, devices]) => (
               <Card key={room} className="p-4">
                 <CardHeader className="pb-3">
                   <CardTitle className="capitalize flex items-center gap-2">

@@ -1,5 +1,5 @@
 // API service for ESP32 home automation backend
-const API_BASE_URL = 'https://your-server.com/api'; // Replace with your actual server URL
+const API_BASE_URL = 'https://smartsmoney.in/esp32'; // Live ESP32 server
 
 export interface DeviceStatus {
   value: string;
